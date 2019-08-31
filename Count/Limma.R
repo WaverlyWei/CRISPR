@@ -2,11 +2,13 @@ library(here)
 library(limma)
 library(tidyverse)
 
-count <- read.delim(here("Desktop/SuperFund/CRISPR/ToxCount","ToxCount.count.txt"))
-D20_100FA <- count %>% select(X100FA.D20.1,
-                             X100FA.D20.2,
-                            Cont.D20.1,
-                            Cont.D20.2)
+count <- read.delim(here("SuperFund/CRISPR/Count","CRISPR_Count.count.txt"))
+D8_40 <- count %>% select(X40.D8.1_S4_L001,
+                             X40.D8.2_S5_L001,
+                             X40.D8.3_S6_L001,
+                            Cont.D8.1_S1_L001,
+                            Cont.D8.2_S2_L001,
+                            Cont.D8.4_S3_L001)
                          
 #design <- model.matrix(~X100.D20.1_S18_L002,data = D20_100)
 design <- cbind(Intercept=1,Group=c(1,1,0,0))
@@ -61,7 +63,9 @@ idx <- as.numeric(rownames(output))
 # incorporate gene names 
 output$gene <- as.character(count$Gene[idx])
 
-
 write.csv(output,
           file = here("Desktop/SuperFund/CRISPR/ToxCount/Tox_edgeR/D20_100FA.csv"
           ))
+
+
+# ========== edge R ========== #
