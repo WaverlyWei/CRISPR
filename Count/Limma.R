@@ -1,6 +1,7 @@
 library(here)
 library(limma)
 library(tidyverse)
+library(edgeR)
 
 count <- read.delim(here("SuperFund/CRISPR/Count","CRISPR_Count.count.txt"))
 D8_40 <- count %>% select(X40.D8.1_S4_L001,
@@ -68,4 +69,31 @@ write.csv(output,
           ))
 
 
-# ========== edge R ========== #
+# ========== edge R normalization ========== #
+group <- c(1,1,1,2,2,2)
+y <- DGEList(counts=D8_40, group=group)
+y$samples
+keep <- filterByExpr(y)
+y <- y[keep, , keep.lib.sizes=FALSE]
+
+# model 
+group <- factor(c(1,1,1,0,0,0))
+design <- model.matrix(~group)
+y <- DGEList(y, group=group)
+y_d <- estimateDisp(y, design)
+
+
+fit <- glmQLFit(y_d, design)
+qlf <- glmQLFTest(fit)
+res <- topTags(qlf, n = dim(count)[1])
+output <- res$table
+
+
+head(output)
+idx <- as.numeric(rownames(output))
+# incorporate gene names 
+output$gene <- as.character(count$Gene[idx])
+
+write.csv(output,
+          file = here("SuperFund/CRISPR/ToxCount/Tox_edgeR/D8_40_postpreprocessing.csv"
+          ))
